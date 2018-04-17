@@ -79,10 +79,12 @@ def tobs():
 
 # return a json list of the minimum temperature, the average temperature, and the max temperature for a given start or start-end range.
 # cannot get these to run
-@app.route("/api/v1.0/<start>/")
-def temp_info_start(start_date):
-    temp_data = calc_temps(start_date)
-    Min, Avg, Max = temp_data[0]
+@app.route("/api/v1.0/<start>")
+def temp_info_start(start):
+    temp_data = calc_temps(start)
+    Min = temp_data.tobs.min()
+    Max = temp_data.tobs.max()
+    Avg= temp_data.tobs.avg()
     temp_results = {
         "minimum temperature":Min,
         "average temperature":Avg,
@@ -93,9 +95,11 @@ def temp_info_start(start_date):
 
 
 @app.route("/api/v1.0/<start>/<end>")
-def temp_info_start_end(start_date, end_date):
-    temp_data = calc_temps(start_date, end_date)
-    Min, Avg, Max = temp_data[0]
+def temp_info_start_end(start, end):
+    temp_data = calc_temps(start, end)
+    Min = temp_data.tobs.min()
+    Max = temp_data.tobs.max()
+    Avg= temp_data.tobs.avg()
     temp_results = {
         "minimum temperature":Min,
         "average temperature":Avg,
