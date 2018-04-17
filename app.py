@@ -7,7 +7,6 @@ from sqlalchemy import create_engine, inspect, func
 from flask import Flask, jsonify
 import datetime as dt
 
-# reflect database tables (Measurment & Station) into classes
 engine = create_engine("sqlite:///hawaii.sqlite", echo=False)
 
 Base = automap_base()
@@ -17,15 +16,13 @@ Station = Base.classes.station
 
 session = Session(engine)
 
-# get datetime to be used within functions
+# Date
 today = dt.date.today()
 year = dt.timedelta(days=365)
 year_ago = dt.date.today()- year
 
 
 
-
-# define method for temperature calculations
 def calc_temps(start_date, end_date):
     minimum = session.query(func.min(Measurement.tobs)).filter(Measurement.date > start_date)\
                              .filter(Measurement.date < end_date).all()
@@ -53,8 +50,8 @@ def home():
         f"/api/v1.0/tobs<br/>"
         f"Returns observed temperatures from the previous year<br/><br/>"
         f"/api/v1.0/[start]/<br/>"
-        f"Returns the minimum, average, and maximum temperatures for a given date range<br/>"
-        f"If no end date is provided, all dates after the start date will be included<br/>"        
+        f"Returns the minimum, average, and maximum temperatures<br/>"
+               
     )
 
 # return precipitation data for previous year
@@ -81,10 +78,9 @@ def tobs():
     return recent_tobs_json
 
 # return a json list of the minimum temperature, the average temperature, and the max temperature for a given start or start-end range.
-# when given the start only, calculate TMIN, TAVG, and TMAX for all dates greater than and equal to the start date.
-# when given the start and the end date, calculate the TMIN, TAVG, and TMAX for dates between the start and end date inclusive.
+# cannot get these to run
 @app.route("/api/v1.0/<start>/")
-def temp_info_open_ended(start_date):
+def temp_info_start(start_date):
     temp_data = calc_temps(start_date)
     Min, Avg, Max = temp_data[0]
     temp_results = {
@@ -97,17 +93,17 @@ def temp_info_open_ended(start_date):
 
 
 @app.route("/api/v1.0/<start>/<end>")
-def temp_info(start, end):
-    temp_data = calc_temps(start, end)
-    min_temp, avg_temp, max_temp = temp_data[0]
+def temp_info_start_end(start_date, end_date):
+    temp_data = calc_temps(start_date, end_date)
+    Min, Avg, Max = temp_data[0]
     temp_results = {
-        "minimum temperature":min_temp,
-        "average temperature":avg_temp,
-        "maximum temperature":max_temp
+        "minimum temperature":Min,
+        "average temperature":Avg,
+        "maximum temperature":Max
     }
     temp_results_json = jsonify(temp_results)
     return temp_results_json
 
-# define main behavior
+
 if __name__ == "__main__":
     app.run()
