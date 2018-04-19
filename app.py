@@ -16,21 +16,6 @@ Station = Base.classes.station
 
 session = Session(engine)
 
-# Date
-today = dt.date.today()
-year = dt.timedelta(days=365)
-year_ago = dt.date.today()- year
-
-
-
-def calc_temps(start_date, end_date):
-    minimum = session.query(func.min(Measurement.tobs)).filter(Measurement.date > start_date)\
-                             .filter(Measurement.date < end_date).all()
-    maximum = session.query(func.max(Measurement.tobs)).filter(Measurement.date > start_date)\
-                             .filter(Measurement.date < end_date).all()
-    average = session.query(func.avg(Measurement.tobs)).filter(Measurement.date > start_date)\
-                             .filter(Measurement.date < end_date).all()
-    return minimum, maximum, average
 
 # create app
 app = Flask(__name__)
