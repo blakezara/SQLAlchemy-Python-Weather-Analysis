@@ -39,19 +39,15 @@ app = Flask(__name__)
 
 # home
 @app.route("/")
-def home():
+def welcome():
+    """List all available api routes."""
     return (
-        f"Welcome to the Hawaiian Weather Center!<br/><br/>"
         f"Available Routes:<br/>"
         f"/api/v1.0/precipitation<br/>"
-        f"Returns precipitation data for the previous year<br/><br/>"
         f"/api/v1.0/stations<br/>"
-        f"Returns a list of weather stations<br/><br/>"
         f"/api/v1.0/tobs<br/>"
-        f"Returns observed temperatures from the previous year<br/><br/>"
-        f"/api/v1.0/[start]/<br/>"
-        f"Returns the minimum, average, and maximum temperatures<br/>"
-               
+        f"/api/v1.0/<start></br>"
+        f"/api/v1.0/<start>/<end>"
     )
 
 # return precipitation data for previous year
@@ -79,34 +75,32 @@ def tobs():
 
 # return a json list of the minimum temperature, the average temperature, and the max temperature for a given start or start-end range.
 # cannot get these to run
-@app.route("/api/v1.0/<start>")
-def temp_info_start(start):
-    temp_data = calc_temps(start)
-    Min = temp_data.tobs.min()
-    Max = temp_data.tobs.max()
-    Avg= temp_data.tobs.avg()
-    temp_results = {
-        "minimum temperature":Min,
-        "average temperature":Avg,
-        "maximum temperature":Max
-    }
-    temp_results_json = jsonify(temp_results)
-    return temp_results_json
+@app.route("/api/v1.0/<string:start>")
+def start(start):
 
+    date = datetime.strptime(start, '%Y-%m-%d')
 
-@app.route("/api/v1.0/<start>/<end>")
-def temp_info_start_end(start, end):
-    temp_data = calc_temps(start, end)
-    Min = temp_data.tobs.min()
-    Max = temp_data.tobs.max()
-    Avg= temp_data.tobs.avg()
-    temp_results = {
-        "minimum temperature":Min,
-        "average temperature":Avg,
-        "maximum temperature":Max
-    }
-    temp_results_json = jsonify(temp_results)
-    return temp_results_json
+    minimum = session.query(func.min(Measurement.tobs)).filter(Measurement.date > start).all()
+    maximum = session.query(func.max(Measurement.tobs)).filter(Measurement.date > start).all()
+    average = session.query(func.avg(Measurement.tobs)).filter(Measurement.date > start).all()
+    
+    temp_dict = {'min': minimum, 'max': maximum, 'avg': average}
+    
+    return jsonify(temp_dict)
+
+@app.route("/api/v1.0/<string:start>/<string:end>")
+def startend(start,end):
+
+	
+	minimum = session.query(func.min(Measurement.tobs)).filter(Measurement.date > start).filter(Measurement.date > end).all()
+	maximum = session.query(func.max(Measurement.tobs)).filter(Measurement.date > start).filter(Measurement.date > end).all()
+	average = session.query(func.avg(Measurement.tobs)).filter(Measurement.date > start).filter(Measurement.date > end).all()
+
+	#create dict
+	temp_dict = {'min': minimum, 'max': maximum, 'avg': average, 'start': start, 'end': end}
+
+	#return jsonify
+	return jsonify(temp_dict)
 
 
 if __name__ == "__main__":
